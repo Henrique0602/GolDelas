@@ -68,9 +68,11 @@ const Anteriores = () => {
                         </div>
                         <p className="text-white font-bold text-2xl ml-10">1</p>
                     </div>
-                    <button className="text-yellow-400 text-sm mt-4  flex items-center">
-                        Ver estatísticas →
-                    </button>
+                     <Link href="/Estatisticas/2">
+                        <button className="text-yellow-400 text-sm mt-4 underline flex items-center">
+                            Ver estatísticas →
+                        </button>
+                    </Link>
                 </div>
 
 
@@ -100,9 +102,11 @@ const Anteriores = () => {
                         </div>
                         <p className="text-white font-bold text-2xl ml-10">2</p>
                     </div>
-                    <button className="text-yellow-400 text-sm mt-4  flex items-center">
-                        Ver estatísticas →
-                    </button>
+                     <Link href="/Estatisticas/3">
+                        <button className="text-yellow-400 text-sm mt-4 underline flex items-center">
+                            Ver estatísticas →
+                        </button>
+                    </Link>
                 </div>
 
 
@@ -132,9 +136,11 @@ const Anteriores = () => {
                         </div>
                         <p className="text-white font-bold text-2xl ml-10">2</p>
                     </div>
-                    <button className="text-yellow-400 text-sm mt-4  flex items-center">
-                        Ver estatísticas →
-                    </button>
+                       <Link href="/Estatisticas/4">
+                        <button className="text-yellow-400 text-sm mt-4 underline flex items-center">
+                            Ver estatísticas →
+                        </button>
+                    </Link>
                 </div>
             </div>
         </section>
