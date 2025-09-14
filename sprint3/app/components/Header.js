@@ -1,6 +1,7 @@
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { AiFillHome, AiFillTrophy } from "react-icons/ai";
 import { MdAdminPanelSettings, MdArticle } from "react-icons/md";
+import Link from "next/link";
 
 const Header = () => {
   return (
@@ -13,8 +14,12 @@ const Header = () => {
       {/* Navigation Section */}
       <nav className="flex items-center space-x-6 text-white text-sm">
         <div className="flex flex-col items-center">
-          <AiFillHome className="text-2xl" />
-          <button>Início</button>
+          <Link href="/">
+            <AiFillHome className="text-2xl" />
+
+            <button>Início</button>
+          </Link>
+
         </div>
         <div className="flex flex-col items-center">
           <AiFillTrophy className="text-2xl" />
@@ -28,13 +33,13 @@ const Header = () => {
           <MdArticle className="text-2xl" />
           <button>Notícias</button>
         </div>
-      
+
       </nav>
 
-        <div className="flex flex-col items-center">
-          <IoPersonCircleOutline className="text-2xl" />
-          <p>Perfil</p>
-        </div>
+      <div className="flex flex-col items-center">
+        <IoPersonCircleOutline className="text-2xl" />
+        <p>Perfil</p>
+      </div>
     </header>
   );
 };

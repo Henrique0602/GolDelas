@@ -1,5 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
+import Header from "@/app/components/Header";
 
 const Estatisticas = () => {
     const { id } = useParams();
@@ -123,6 +124,7 @@ const Estatisticas = () => {
 
     return (
         <div className="bg-black text-white min-h-screen p-6">
+            <Header></Header>
             <div className="text-center mb-6">
                 <div className="flex justify-center items-center space-x-4">
                     <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
