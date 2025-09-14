@@ -123,9 +123,9 @@ const Estatisticas = () => {
     }
 
     return (
-        <div className="bg-black text-white min-h-screen p-6">
+        <div className="bg-black text-white min-h-screen p-6 ">
             <Header></Header>
-            <div className="text-center mb-6">
+            <div className="text-center mt-10">
                 <div className="flex justify-center items-center space-x-4">
                     <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
                     <p className="text-4xl font-bold">{jogo.placar}</p>

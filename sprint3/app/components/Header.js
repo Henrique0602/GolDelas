@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const Header = () => {
   return (
-    <header className="flex items-center justify-between p-4 border-b border-gray-700 bg-black">
+    <header className="flex flex-wrap justify-around gap-6 text-center items-stretch">
       {/* Logo Section */}
       <div className="flex items-center space-x-4">
         <img src="/logo.png" alt="Logo GolDelas" className="h-8" />
@@ -37,8 +37,11 @@ const Header = () => {
       </nav>
 
       <div className="flex flex-col items-center">
-        <IoPersonCircleOutline className="text-2xl" />
-        <p>Perfil</p>
+        <Link href="/Perfil/1">
+          <IoPersonCircleOutline className="text-2xl" />
+          <p>Perfil</p>
+        </Link>
+
       </div>
     </header>
   );
