@@ -5,13 +5,13 @@ import Link from "next/link";
 
 const Header = () => {
   return (
-    <header className="flex flex-wrap justify-around gap-6 text-center items-stretch bg-linear-to-r from-yellow-900 to-yellow-600">
-   
+    <header className="flex flex-wrap justify-around  gap-6 text-center items-stretch bg-linear-to-r from-yellow-900 to-yellow-600 h-15" >
+
       <div className="flex items-center space-x-4">
         <img src="/logo.png" alt="Logo GolDelas" className="h-8" />
       </div>
 
-     
+
       <nav className="flex items-center space-x-6 text-white text-sm">
         <div className="flex flex-col items-center">
           <Link href="/">
@@ -26,8 +26,11 @@ const Header = () => {
           <button>Campeonatos</button>
         </div>
         <div className="flex flex-col items-center">
-          <MdAdminPanelSettings className="text-2xl" />
-          <button>Área Admin.</button>
+          <Link href='/Adm'>
+            <MdAdminPanelSettings className="text-2xl" />
+            <button>Área Admin.</button>
+          </Link>
+
         </div>
         <div className="flex flex-col items-center">
           <MdArticle className="text-2xl" />

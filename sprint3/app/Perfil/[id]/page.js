@@ -1,15 +1,24 @@
 "use client";
+import { useEffect, useState } from "react";
 import Header from "@/app/components/Header";
-import { useParams } from "next/navigation";
 import Footer from "@/app/components/Footer";
+import Link from "next/link";
+
 
 const Perfil = () => {
-  const { id } = useParams();
+  const [selectedTeam, setSelectedTeam] = useState(null);
+
+  useEffect(() => {
+
+    const saved = localStorage.getItem("selectedTeam");
+    if (saved) {
+      setSelectedTeam(JSON.parse(saved));
+    }
+  }, []);
 
   return (
     <section className="bg-black text-white min-h-screen">
       <Header />
-
       <main className="flex flex-wrap justify-around gap-6 text-center items-stretch mt-10">
         <div className="flex flex-col items-center text-center">
           <img
@@ -21,29 +30,35 @@ const Perfil = () => {
           <p className="text-gray-400 text-sm">Lucas Almeida Vaillancourt Palomo</p>
           <p className="text-gray-400 text-sm">lucas_almeida_07@gmail.com</p>
           <p className="text-gray-400 text-sm">Porto Alegre-RS</p>
-          <p className="text-yellow-400 text-lg mt-4 ">Muito daora o futebol feminino.</p>
+          <p className="text-yellow-400 text-lg mt-4 ">
+            Muito daora o futebol feminino.
+          </p>
         </div>
 
-    
         <div className="flex flex-col items-center text-center">
           <h2 className="text-yellow-400 text-lg font-bold mb-4">Interesses</h2>
-          <div className="flex justify-center items-center space-x-4">
-            <img
-              src="/SP.png"
-              alt="São Paulo"
-              className="h-20 w-20 object-contain"
-            />
-            <p className="text-white text-lg font-medium">São Paulo</p>
-          </div>
-          <button className="mt-8 bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-500">
-            Editar perfil
-          </button>
+          {selectedTeam ? (
+            <div className="flex justify-center items-center space-x-4">
+              <img
+                src={selectedTeam.logo}
+                alt={selectedTeam.nome}
+                className="h-20 w-20 object-contain"
+              />
+              <p className="text-white text-lg font-medium">{selectedTeam.nome}</p>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm">Nenhum time selecionado</p>
+          )}
+
+          <Link href="/Interesse">
+            <button className="mt-8 bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-500">
+              Editar perfil
+            </button>
+          </Link>
+
         </div>
       </main>
-
-      <Footer></Footer>
-
-      
+      <Footer />
     </section>
   );
 };

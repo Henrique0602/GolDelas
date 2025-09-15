@@ -41,7 +41,7 @@ const Home = () => {
 
                         <div className="absolute bottom-0 w-full bg-black bg-opacity-50 p-4">
                             <h3 className="text-white font-bold text-lg text-center">
-                                Hat-trick aos 16! Mariana Souza brilha no Sub-17 e já atrai olheiros da Europa!
+                                Corinthians domina e vence por 3x0 com golaço de Gabi Portilho e defesa impenetrável!
                             </h3>
                         </div>
                     </div>
