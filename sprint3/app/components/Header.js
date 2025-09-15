@@ -5,13 +5,13 @@ import Link from "next/link";
 
 const Header = () => {
   return (
-    <header className="flex flex-wrap justify-around gap-6 text-center items-stretch">
-      {/* Logo Section */}
+    <header className="flex flex-wrap justify-around gap-6 text-center items-stretch bg-linear-to-r from-yellow-900 to-yellow-600">
+   
       <div className="flex items-center space-x-4">
         <img src="/logo.png" alt="Logo GolDelas" className="h-8" />
       </div>
 
-      {/* Navigation Section */}
+     
       <nav className="flex items-center space-x-6 text-white text-sm">
         <div className="flex flex-col items-center">
           <Link href="/">

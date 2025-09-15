@@ -9,7 +9,7 @@ const Anteriores = () => {
 
             <div className="flex flex-wrap justify-around gap-6 text-center items-stretch">
 
-                <div className="border border-yellow-400 rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
+                <div className=" rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
                     <p className="text-yellow-400 text-sm mb-2 font-bold">Copa do Brasil</p>
                     <div className="flex justify-between items-center w-full">
 
@@ -42,7 +42,7 @@ const Anteriores = () => {
                     </Link>
                 </div>
 
-                <div className="border border-yellow-400 rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
+                <div className=" rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
                     <p className="text-yellow-400 text-sm mb-2 font-bold">Campeonato Brasileiro</p>
                     <div className="flex justify-between items-center w-full">
 
@@ -76,7 +76,7 @@ const Anteriores = () => {
                 </div>
 
 
-                <div className="border border-yellow-400 rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
+                <div className=" rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
                     <p className="text-yellow-400 text-sm mb-2 font-bold">Campeonato Carioca</p>
                     <div className="flex justify-between items-center w-full">
 
@@ -110,7 +110,7 @@ const Anteriores = () => {
                 </div>
 
 
-                <div className="border border-yellow-400 rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
+                <div className=" rounded-lg p-6 bg-black shadow-lg flex flex-col items-center">
                     <p className="text-yellow-400 text-sm mb-2 font-bold">Campeonato Brasileiro</p>
                     <div className="flex justify-between items-center w-full">
 

@@ -123,7 +123,7 @@ const Estatisticas = () => {
     }
 
     return (
-        <div className="bg-black text-white min-h-screen p-6 ">
+        <div className="bg-black text-white min-h-screen  ">
             <Header></Header>
             <div className="text-center mt-10">
                 <div className="flex justify-center items-center space-x-4">
