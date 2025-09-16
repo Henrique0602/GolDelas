@@ -56,6 +56,12 @@ const Perfil = () => {
             </button>
           </Link>
 
+            <Link href="/">
+            <button className="mt-8 bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-500">
+              Encerrar Sessão
+            </button>
+          </Link>
+
         </div>
       </main>
       <Footer />

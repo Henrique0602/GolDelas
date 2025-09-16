@@ -47,7 +47,7 @@ const Interesse = () => {
           {times.map((time, index) => (
             <div
               key={index}
-              className="bg-yellow-400 rounded-lg p-4 flex flex-col items-center"
+              className="bg-gray-400 rounded-lg p-4 flex flex-col items-center"
             >
               <img
                 src={time.logo}
@@ -56,7 +56,7 @@ const Interesse = () => {
               />
               <p className="text-white text-lg font-medium mb-4">{time.nome}</p>
               <button
-                className="bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
+                className="bg-yellow-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
                 onClick={() => handleSelectTeam(time)}
               >
                 Seguir
