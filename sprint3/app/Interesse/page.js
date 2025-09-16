@@ -1,5 +1,6 @@
 "use client";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const Interesse = () => {
   const times = [
@@ -27,7 +28,7 @@ const Interesse = () => {
   ];
 
   const handleSelectTeam = (time) => {
-    // salva no navegador
+    
     localStorage.setItem("selectedTeam", JSON.stringify(time));
     alert(`${time.nome} foi selecionado! Vá para Perfil.`);
   };
@@ -35,7 +36,7 @@ const Interesse = () => {
   return (
     <section>
       <Header />
-      <div className="bg-black text-white min-h-screen p-8">
+      <main className="bg-black text-white min-h-screen p-8">
         <h1 className="text-yellow-400 text-3xl font-bold text-center mb-6">
           Brasileirão Feminino
         </h1>
@@ -64,7 +65,9 @@ const Interesse = () => {
             </div>
           ))}
         </div>
-      </div>
+      </main>
+
+      <Footer></Footer>
     </section>
   );
 };

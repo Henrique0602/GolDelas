@@ -32,23 +32,27 @@ const ADM = () => {
                     </Link>
 
 
+                    <Link href='/Time'>
+                        <div className="border border-yellow-400 rounded-lg p-6 text-center mb-10">
+                            <h2 className="text-yellow-400 text-lg font-bold mb-2">TIME</h2>
+                            <p className="text-gray-400 text-sm">
+                                Represento um clube e desejo encontrar jovens talentos, além de
+                                adentrar competições.
+                            </p>
+                        </div>
+                    </Link>
 
-                    <div className="border border-yellow-400 rounded-lg p-6 text-center mb-10">
-                        <h2 className="text-yellow-400 text-lg font-bold mb-2">TIME</h2>
-                        <p className="text-gray-400 text-sm">
-                            Represento um clube e desejo encontrar jovens talentos, além de
-                            adentrar competições.
-                        </p>
-                    </div>
 
-
-                    <div className="border border-yellow-400 rounded-lg p-6 text-center">
+                    <Link href='/Jogadora'>
+                       <div className="border border-yellow-400 rounded-lg p-6 text-center">
                         <h2 className="text-yellow-400 text-lg font-bold mb-2">JOGADORA</h2>
                         <p className="text-gray-400 text-sm">
                             Sou uma jogadora e desejo procurar oportunidades de jogar em times
                             de várzea.
                         </p>
                     </div>
+                    </Link>
+                 
 
 
 

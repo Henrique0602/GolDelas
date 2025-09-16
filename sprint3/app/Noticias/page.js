@@ -1,5 +1,6 @@
 "use client";
 import Header from "@/app/components/Header";
+import Footer from "../components/Footer";
 
 const noticias = [
     {
@@ -76,6 +77,7 @@ const Noticias = () => {
                     ))}
                 </div>
             </main>
+            <Footer></Footer>
         </section>
     );
 };

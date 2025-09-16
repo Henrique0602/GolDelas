@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
 
 const Estatisticas = () => {
     const { id } = useParams();
@@ -125,41 +126,46 @@ const Estatisticas = () => {
     return (
         <div className="bg-black text-white min-h-screen  ">
             <Header></Header>
-            <div className="text-center mt-10">
-                <div className="flex justify-center items-center space-x-4">
-                    <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
-                    <p className="text-4xl font-bold">{jogo.placar}</p>
-                    <img src={jogo.imagens.time2} alt={jogo.time2} className="h-12 w-12" />
-                </div>
-                <p className="text-gray-400 mt-2">
-                    {jogo.gols
-                        .map((gol) => `${gol.jogador} ${gol.minutos}`)
-                        .join(" | ")}
-                </p>
-            </div>
-
-            <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center">
-                Estatísticas dos Times
-            </h2>
-
-            <div className=" gap-4 text-center">
-                {Object.entries(jogo.detalhes).map(([key, value], index) => (
-                    <div
-                        key={index}
-                        className="flex justify-between items-center border-b border-gray-700 py-2"
-                    >
-                        <p className="text-yellow-400 font-bold text-lg">
-                            {value[0]}
-                        </p>
-                        <p className="text-white text-sm capitalize">
-                            {key.replace(/([A-Z])/g, " $1")}
-                        </p>
-                        <p className="text-red-400 font-bold text-lg">
-                            {value[1]}
-                        </p>
+            <main className="p-6">
+                <div className="text-center mt-10">
+                    <div className="flex justify-center items-center space-x-4">
+                        <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
+                        <p className="text-4xl font-bold">{jogo.placar}</p>
+                        <img src={jogo.imagens.time2} alt={jogo.time2} className="h-12 w-12" />
                     </div>
-                ))}
-            </div>
+                    <p className="text-gray-400 mt-2">
+                        {jogo.gols
+                            .map((gol) => `${gol.jogador} ${gol.minutos}`)
+                            .join(" | ")}
+                    </p>
+                </div>
+
+                <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center">
+                    Estatísticas dos Times
+                </h2>
+
+                <div className=" gap-4 text-center">
+                    {Object.entries(jogo.detalhes).map(([key, value], index) => (
+                        <div
+                            key={index}
+                            className="flex justify-between items-center border-b border-gray-700 py-2"
+                        >
+                            <p className="text-yellow-400 font-bold text-lg">
+                                {value[0]}
+                            </p>
+                            <p className="text-white text-sm capitalize">
+                                {key.replace(/([A-Z])/g, " $1")}
+                            </p>
+                            <p className="text-red-400 font-bold text-lg">
+                                {value[1]}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </main>
+
+            <Footer></Footer>
+
         </div>
     );
 };
