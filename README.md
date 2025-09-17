@@ -2,6 +2,13 @@
 
 Interface web construída em Next.js para exibir partidas, estatísticas e widgets oficiais usando a [API-Football v3](https://www.api-football.com/documentation-v3). O projeto foi pensado para o plano gratuito da API, aproveitando jogos das temporadas 2021 a 2023 e tratando as limitações desse plano.
 
+## INTEGRANTES
+PEDRO GOMES - RM563191
+RAUL LAGUNA - RM562684
+ERIC YANG - RM563290
+HENRIQUE - 563322
+PIETTRA - 562538
+
 ## Tecnologias
 - [Next.js 15 (App Router)](https://nextjs.org)
 - React 19
