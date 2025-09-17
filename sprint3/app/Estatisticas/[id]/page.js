@@ -1,171 +1,296 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 
-const Estatisticas = () => {
-    const { id } = useParams();
-    const router = useRouter();
+const FIXTURE_PRESETS = {
+    "1": {
+        fixtureId: "871846",
+        description: "Paris Saint-Germain x Clermont Foot - Ligue 1 2022/23",
+    },
+    "2": {
+        fixtureId: "871464",
+        description: "1.FC Koln x Bayern Munich - Bundesliga 2022/23",
+    },
+    "3": {
+        fixtureId: "878317",
+        description: "Celta Vigo x Barcelona - La Liga 2022/23",
+    },
+    "4": {
+        fixtureId: "882157",
+        description: "AC Milan x Verona - Serie A 2022/23",
+    },
+};
 
-    const jogos = {
-        "1": {
-            time1: "São Paulo",
-            time2: "Palmeiras",
-            placar: "5 x 0",
-            detalhes: {
-                chutes: [12, 7],
-                chutesAoGol: [10, 3],
-                posseDeBola: ["53%", "47%"],
-                passes: [430, 381],
-                precisaoDePasses: ["81%", "78%"],
-                faltas: [5, 6],
-                cartoesAmarelos: [1, 2],
-                cartoesVermelhos: [0, 0],
-                impedimentos: [2, 2],
-                escanteios: [7, 4],
-            },
-            imagens: {
-                time1: "/SP.png",
-                time2: "/Palmeiras.png",
-            },
-            gols: [
-                { jogador: "Athenea del Castillo", minutos: "52, 64", time: "São Paulo" },
-                { jogador: "Lena Oberdorf", minutos: "15 (P)", time: "Palmeiras" },
-            ],
-        },
+const API_HEADERS = {
+    "x-apisports-key": "21ec046021d8390f3aada86d4a25005f",
+    "x-rapidapi-host": "v3.football.api-sports.io",
+    Accept: "application/json",
+};
 
-        "2": {
-            time1: "Corinthians",
-            time2: "Vitória",
-            placar: "2 x 1",
-            detalhes: {
-                chutes: [12, 7],
-                chutesAoGol: [5, 3],
-                posseDeBola: ["53%", "47%"],
-                passes: [500, 200],
-                precisaoDePasses: ["71%", "75%"],
-                faltas: [5, 10],
-                cartoesAmarelos: [1, 2],
-                cartoesVermelhos: [0, 1],
-                impedimentos: [2, 4],
-                escanteios: [7, 7],
-            },
-            imagens: {
-                time1: "/Corinthians.png",
-                time2: "/Vitoria.png",
-            },
-            gols: [
-                { jogador: "Joana", minutos: "52, 64", time: "Corinthians" },
-                { jogador: "Adriana", minutos: "15 (P)", time: "Vitória" },
-            ],
-        },
+const api = axios.create({
+    baseURL: "https://v3.football.api-sports.io",
+    headers: API_HEADERS,
+});
 
-        "3": {
-            time1: "Flamengo",
-            time2: "Botafogo",
-            placar: "3 x 2",
-            detalhes: {
-                chutes: [10, 8],
-                chutesAoGol: [5, 5],
-                posseDeBola: ["53%", "47%"],
-                passes: [300, 200],
-                precisaoDePasses: ["70%", "75%"],
-                faltas: [5, 2],
-                cartoesAmarelos: [1, 2],
-                cartoesVermelhos: [1, 0],
-                impedimentos: [2, 4],
-                escanteios: [7, 7],
-            },
-            imagens: {
-                time1: "/Flamengo.png",
-                time2: "/Bota.png",
-            },
-            gols: [
-                { jogador: "Debora", minutos: "52, 64, 90", time: "Flamengo" },
-                { jogador: "Adriana", minutos: "15 (P), 95", time: "Botafogo" },
-            ],
-        },
-
-
-        "4": {
-            time1: "Bahia",
-            time2: "Fortaleza",
-            placar: "2 x 2",
-            detalhes: {
-                chutes: [10, 8],
-                chutesAoGol: [5, 5],
-                posseDeBola: ["53%", "47%"],
-                passes: [300, 200],
-                precisaoDePasses: ["70%", "75%"],
-                faltas: [5, 2],
-                cartoesAmarelos: [1, 2],
-                cartoesVermelhos: [1, 0],
-                impedimentos: [2, 4],
-                escanteios: [7, 7],
-            },
-            imagens: {
-                time1: "/Bahia.png",
-                time2: "/Fortaleza.png",
-            },
-            gols: [
-                { jogador: "Lucy", minutos: "52, 64", time: "Bahia" },
-                { jogador: "Julia", minutos: "5, 95", time: "Fortaleza" },
-            ],
-        }
-
-
-
-    };
-
-    const jogo = jogos[id];
-
-    if (!jogo) {
-        return <p className="text-white">Carregando...</p>;
+const getFirstApiError = errors => {
+    if (!errors) {
+        return "";
     }
 
+    const messages = Object.values(errors).filter(Boolean);
+    return messages.length > 0 ? String(messages[0]) : "";
+};
+
+const Estatisticas = () => {
+    const { id } = useParams();
+    const preset = FIXTURE_PRESETS[id];
+    const fixtureId = Number(preset?.fixtureId ?? id);
+
+    const [fixture, setFixture] = useState(null);
+    const [stats, setStats] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const widgetRef = useRef(null);
+
+    useEffect(() => {
+        if (!fixtureId || Number.isNaN(fixtureId)) {
+            setError("Jogo nao encontrado.");
+            setFixture(null);
+            setStats([]);
+            setLoading(false);
+            return;
+        }
+
+        let cancelled = false;
+
+        const fetchData = async () => {
+            setLoading(true);
+            setError("");
+
+            try {
+                const fixtureRes = await api.get("/fixtures", {
+                    params: { id: fixtureId },
+                });
+                if (cancelled) {
+                    return;
+                }
+
+                const fixtureErrors = getFirstApiError(fixtureRes.data?.errors);
+                const fixtureData = fixtureRes.data?.response?.[0] ?? null;
+
+                if (fixtureErrors) {
+                    setError(fixtureErrors);
+                }
+
+                if (!fixtureData) {
+                    setFixture(null);
+                    setStats([]);
+                    if (!fixtureErrors) {
+                        setError("Jogo nao encontrado para esse codigo.");
+                    }
+                    setLoading(false);
+                    return;
+                }
+
+                const statsRes = await api.get("/fixtures/statistics", {
+                    params: { fixture: fixtureId },
+                });
+                if (cancelled) {
+                    return;
+                }
+
+                const statsErrors = getFirstApiError(statsRes.data?.errors);
+                const statsData = statsRes.data?.response ?? [];
+
+                if (statsErrors) {
+                    setError(statsErrors);
+                }
+
+                setFixture(fixtureData);
+                setStats(statsData);
+
+                if (!statsData?.length && !statsErrors) {
+                    setError("Estatisticas nao disponiveis para esse jogo no plano gratuito.");
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    const message =
+                        err.response?.data?.errors && Object.keys(err.response.data.errors).length
+                            ? getFirstApiError(err.response.data.errors)
+                            : "Nao foi possivel carregar os dados desse jogo. O plano gratuito libera partidas das temporadas 2021 a 2023.";
+                    setError(message);
+                    setFixture(null);
+                    setStats([]);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [fixtureId]);
+
+    useEffect(() => {
+        if (!widgetRef.current || !fixtureId || !fixture) {
+            return;
+        }
+
+        widgetRef.current.innerHTML = "";
+
+        const widgetDiv = document.createElement("div");
+        widgetDiv.id = `wg-api-football-game-${fixtureId}`;
+        widgetDiv.setAttribute("data-host", "v3.football.api-sports.io");
+        widgetDiv.setAttribute("data-key", "21ec046021d8390f3aada86d4a25005f");
+        widgetDiv.setAttribute("data-id", String(fixtureId));
+        widgetDiv.setAttribute("data-theme", "dark");
+        widgetDiv.setAttribute("data-refresh", "60");
+        widgetDiv.setAttribute("data-show-errors", "false");
+        widgetDiv.setAttribute("data-show-logos", "true");
+        widgetRef.current.appendChild(widgetDiv);
+
+        const scriptId = "wg-api-football-script";
+        const existingScript = document.getElementById(scriptId);
+
+        const appendScript = () => {
+            const script = document.createElement("script");
+            script.type = "module";
+            script.src = "https://widgets.api-sports.io/2.0.3/widgets.js";
+            script.id = scriptId;
+            document.body.appendChild(script);
+        };
+
+        if (existingScript) {
+            existingScript.remove();
+            appendScript();
+        } else {
+            appendScript();
+        }
+    }, [fixtureId, fixture]);
+
+    const presetInfo = FIXTURE_PRESETS[id];
+    const activeFixture = fixture;
+    const matchInfo = activeFixture?.fixture;
+    const leagueInfo = activeFixture?.league;
+    const home = activeFixture?.teams?.home;
+    const away = activeFixture?.teams?.away;
+    const score =
+        activeFixture && activeFixture.goals
+            ? `${activeFixture.goals.home} x ${activeFixture.goals.away}`
+            : "";
+    const goals =
+        activeFixture?.events?.filter(event => event.type === "Goal") ?? [];
+
+    const matchDate = matchInfo?.date
+        ? new Date(matchInfo.date).toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+          })
+        : "";
+
     return (
-        <div className="bg-black text-white min-h-screen  ">
-            <Header></Header>
+        <div className="bg-black text-white min-h-screen">
+            <Header />
             <main className="p-6">
-                <div className="text-center mt-10">
-                    <div className="flex justify-center items-center space-x-4">
-                        <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
-                        <p className="text-4xl font-bold">{jogo.placar}</p>
-                        <img src={jogo.imagens.time2} alt={jogo.time2} className="h-12 w-12" />
-                    </div>
-                    <p className="text-gray-400 mt-2">
-                        {jogo.gols
-                            .map((gol) => `${gol.jogador} ${gol.minutos}`)
-                            .join(" | ")}
+                {presetInfo?.description && (
+                    <p className="text-gray-400 text-center text-sm mb-2">
+                        {presetInfo.description}
                     </p>
-                </div>
+                )}
 
-                <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center">
-                    Estatísticas dos Times
-                </h2>
+                {error && (
+                    <p className="text-red-400 text-center text-sm mb-6">{error}</p>
+                )}
 
-                <div className=" gap-4 text-center">
-                    {Object.entries(jogo.detalhes).map(([key, value], index) => (
-                        <div
-                            key={index}
-                            className="flex justify-between items-center border-b border-gray-700 py-2"
-                        >
-                            <p className="text-yellow-400 font-bold text-lg">
-                                {value[0]}
-                            </p>
-                            <p className="text-white text-sm capitalize">
-                                {key.replace(/([A-Z])/g, " $1")}
-                            </p>
-                            <p className="text-red-400 font-bold text-lg">
-                                {value[1]}
+                {loading && (
+                    <p className="text-white text-center">Carregando...</p>
+                )}
+
+                {!loading && !activeFixture && (
+                    <p className="text-white text-center">Jogo nao encontrado.</p>
+                )}
+
+                {!loading && activeFixture && (
+                    <>
+                        <div className="text-center mt-10">
+                            {leagueInfo && (
+                                <p className="text-gray-400 text-sm mb-2">
+                                    {leagueInfo.name} - {matchDate}
+                                </p>
+                            )}
+                            <div className="flex justify-center items-center space-x-4">
+                                {home?.logo && (
+                                    <img
+                                        src={home.logo}
+                                        alt={home?.name ?? "Time da casa"}
+                                        className="h-12 w-12"
+                                    />
+                                )}
+                                <p className="text-4xl font-bold">{score}</p>
+                                {away?.logo && (
+                                    <img
+                                        src={away.logo}
+                                        alt={away?.name ?? "Time visitante"}
+                                        className="h-12 w-12"
+                                    />
+                                )}
+                            </div>
+                            <p className="text-gray-400 mt-2">
+                                {goals.length > 0
+                                    ? goals
+                                          .map(
+                                              gol =>
+                                                  `${gol.player?.name ?? "Gol"} ${gol.time?.elapsed}'`
+                                          )
+                                          .join(" | ")
+                                    : "Sem gols detalhados"}
                             </p>
                         </div>
-                    ))}
-                </div>
+
+                        <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center mt-10">
+                            Estatisticas dos Times
+                        </h2>
+
+                        <div className="gap-4 text-center">
+                            {stats.length > 0 && stats[0]?.statistics ? (
+                                stats[0].statistics.map((stat, idx) => (
+                                    <div
+                                        key={`${stat.type}-${idx}`}
+                                        className="flex justify-between items-center border-b border-gray-700 py-2"
+                                    >
+                                        <p className="text-yellow-400 font-bold text-lg">
+                                            {stat.value ?? "-"}
+                                        </p>
+                                        <p className="text-white text-sm">
+                                            {stat.type?.replace(/_/g, " ") ?? "-"}
+                                        </p>
+                                        <p className="text-red-400 font-bold text-lg">
+                                            {stats[1]?.statistics?.[idx]?.value ?? "-"}
+                                        </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>Sem estatisticas disponiveis.</p>
+                            )}
+                        </div>
+                    </>
+                )}
+
+                <div ref={widgetRef} className="my-10 flex justify-center" />
             </main>
-
-            <Footer></Footer>
-
+            <Footer />
         </div>
     );
 };
