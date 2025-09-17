@@ -2,6 +2,13 @@
 
 Este é o MVP do GolDelas, uma interface web moderna construída em Next.js para exibir partidas, estatísticas e widgets oficiais de futebol feminino. Este projeto não inclui a integração com a API-Football, sendo focado exclusivamente no desenvolvimento do layout visual e na experiência do usuário.
 
+## INTEGRANTES
+PEDRO GOMES - RM563191
+RAUL LAGUNA - RM562684
+ERIC YANG - RM563290
+HENRIQUE - 563322
+PIETTRA - 562538
+
 ## Tecnologias Utilizadas
 - **Next.js 15** (App Router) - Framework React para produção
 - **React 19** - Biblioteca JavaScript para interfaces
