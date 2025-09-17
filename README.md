@@ -10,6 +10,7 @@ Interface web construída em Next.js para exibir partidas, estatísticas e widge
 - API-Football widgets (script `https://widgets.api-sports.io/2.0.3/widgets.js`)
 
 ## Como rodar o projeto
+
 1. **Pré-requisitos**: Node.js 18+ e npm.
 2. No terminal, entre na pasta `sprint3/` e instale as dependências:
    ```bash
@@ -17,7 +18,6 @@ Interface web construída em Next.js para exibir partidas, estatísticas e widge
 Inicie o servidor de desenvolvimento:
 
 bash
-Copiar código
 npm run dev
 Acesse http://localhost:3000 no navegador.
 
@@ -64,13 +64,12 @@ Não há backend; a chave fica exposta no bundle se não for movida para variáv
 Os dados não são armazenados em cache. Cada visita realiza chamadas diretas à API.
 
 Estrutura relevante
-bash
-Copiar código
+text
 sprint3/
-+-- app/
-    +-- Estatisticas/[id]/page.js   # Tela dinâmica com integração API-Football
-    +-- components/JogosAnteriores.js # Cards que apontam para os fixtures disponíveis
-    +-- ...                         # Demais páginas e componentes
-+-- public/                         # Imagens estéticas usadas no layout
-+-- package.json                    # Scripts e dependências (npm)
-+-- README.md                       # Este documento
+├── app/
+│   ├── Estatisticas/[id]/page.js   # Tela dinâmica com integração API-Football
+│   ├── components/JogosAnteriores.js # Cards que apontam para os fixtures disponíveis
+│   └── ...                         # Demais páginas e componentes
+├── public/                         # Imagens estéticas usadas no layout
+├── package.json                    # Scripts e dependências (npm)
+└── README.md                       # Este documento
