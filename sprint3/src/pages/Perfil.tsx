@@ -1,18 +1,25 @@
-"use client";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { useEffect, useState } from "react";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-import Link from "next/link";
+import { Link, useParams } from "react-router-dom";
 
+type SelectedTeam = {
+  nome: string;
+  logo: string;
+};
 
 const Perfil = () => {
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const { id } = useParams<{ id: string }>();
+  const [selectedTeam, setSelectedTeam] = useState<SelectedTeam | null>(null);
 
   useEffect(() => {
-
     const saved = localStorage.getItem("selectedTeam");
     if (saved) {
-      setSelectedTeam(JSON.parse(saved));
+      try {
+        setSelectedTeam(JSON.parse(saved));
+      } catch {
+        setSelectedTeam(null);
+      }
     }
   }, []);
 
@@ -30,9 +37,14 @@ const Perfil = () => {
           <p className="text-gray-400 text-sm">Lucas Almeida Vaillancourt Palomo</p>
           <p className="text-gray-400 text-sm">lucas_almeida_07@gmail.com</p>
           <p className="text-gray-400 text-sm">Porto Alegre-RS</p>
-          <p className="text-yellow-400 text-lg mt-4 ">
+          <p className="text-yellow-400 text-lg mt-4">
             Muito daora o futebol feminino.
           </p>
+          {id && (
+            <p className="text-gray-500 text-xs mt-2">
+              ID do perfil: <span className="text-yellow-500">{id}</span>
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center text-center">
@@ -50,18 +62,17 @@ const Perfil = () => {
             <p className="text-gray-400 text-sm">Nenhum time selecionado</p>
           )}
 
-          <Link href="/Interesse">
+          <Link to="/Interesse">
             <button className="mt-8 bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-500">
               Editar perfil
             </button>
           </Link>
 
-            <Link href="/">
+          <Link to="/">
             <button className="mt-8 bg-yellow-400 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-500">
               Encerrar Sessão
             </button>
           </Link>
-
         </div>
       </main>
       <Footer />
@@ -70,3 +81,4 @@ const Perfil = () => {
 };
 
 export default Perfil;
+
