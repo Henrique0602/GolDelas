@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchFixtures, FixtureResponse } from "@/services/apiFootball";
+import apiFootballConfig from "@/config/apiFootballConfig";
 
 type TeamInfo = {
   id: number;
@@ -17,18 +18,20 @@ type UpcomingMatch = {
   away: TeamInfo;
 };
 
-const MIN_FREE_SEASON = Number(import.meta.env.VITE_API_FOOTBALL_FREE_MIN_SEASON ?? "2021");
-const MAX_FREE_SEASON = Number(import.meta.env.VITE_API_FOOTBALL_FREE_MAX_SEASON ?? "2023");
-const DEFAULT_LEAGUE_ID = import.meta.env.VITE_API_FOOTBALL_LEAGUE_ID ?? "";
-const DEFAULT_SEASON = import.meta.env.VITE_API_FOOTBALL_SEASON ?? "";
-const DEFAULT_TIMEZONE = import.meta.env.VITE_API_FOOTBALL_TIMEZONE ?? "America/Sao_Paulo";
+const {
+  minFreeSeason: MIN_FREE_SEASON,
+  maxFreeSeason: MAX_FREE_SEASON,
+  leagueId: DEFAULT_LEAGUE_ID,
+  season: DEFAULT_SEASON,
+  timezone: DEFAULT_TIMEZONE,
+  fallbackLeagueId: FALLBACK_LEAGUE_ID,
+  fallbackSeason: FALLBACK_SEASON,
+  defaultFrom: DEFAULT_FROM,
+  defaultTo: DEFAULT_TO,
+  fallbackFrom: FALLBACK_FROM,
+  fallbackTo: FALLBACK_TO,
+} = apiFootballConfig;
 const UPCOMING_LIMIT = 2;
-const FALLBACK_LEAGUE_ID = import.meta.env.VITE_API_FOOTBALL_FALLBACK_LEAGUE_ID ?? "39";
-const FALLBACK_SEASON = import.meta.env.VITE_API_FOOTBALL_FALLBACK_SEASON ?? "2023";
-const DEFAULT_FROM = import.meta.env.VITE_API_FOOTBALL_DEFAULT_FROM ?? "";
-const DEFAULT_TO = import.meta.env.VITE_API_FOOTBALL_DEFAULT_TO ?? "";
-const FALLBACK_FROM = import.meta.env.VITE_API_FOOTBALL_FALLBACK_FROM ?? "2023-05-06";
-const FALLBACK_TO = import.meta.env.VITE_API_FOOTBALL_FALLBACK_TO ?? "2023-05-08";
 
 const normalizeSeason = (seasonValue: string) => {
   if (!seasonValue) return "";

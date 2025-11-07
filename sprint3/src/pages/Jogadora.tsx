@@ -110,10 +110,7 @@ const Jogadora = () => {
       idade: parseNumber(formState.idade),
       documento: normalizeText(formState.documento),
       posicao: normalizeText(formState.posicao),
-      peDominante:
-        formState.peDominante && formState.peDominante !== ""
-          ? formState.peDominante
-          : "Indefinido",
+      peDominante: formState.peDominante === "" ? "Indefinido" : formState.peDominante,
       altura: parseNumber(formState.altura),
       peso: parseNumber(formState.peso),
       telefone: normalizeText(formState.telefone),

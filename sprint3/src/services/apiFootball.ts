@@ -1,7 +1,8 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_FOOTBALL_BASE_URL ?? "https://v3.football.api-sports.io";
-const API_KEY = import.meta.env.VITE_API_FOOTBALL_KEY;
-const RAPID_HOST = import.meta.env.VITE_API_FOOTBALL_HOST;
+import apiFootballConfig from "@/config/apiFootballConfig";
+
+const API_BASE_URL = apiFootballConfig.apiBaseUrl;
+const API_KEY = apiFootballConfig.apiKey;
+const RAPID_HOST = apiFootballConfig.rapidHost;
 
 export type FixtureResponse = {
   fixture: {
