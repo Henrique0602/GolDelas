@@ -17,7 +17,7 @@ Aplicacao single-page construida com React 19, Vite e Tailwind CSS 4 para destac
 
 ## Deploy
 - Plataforma: Vercel
-- URL: https://godelas.vercel.app
+- URL: [https://godelas.vercel.app](https://gol-delas-i9g8.vercel.app/)
 - Pipeline: `npm run build` executado automaticamente a cada push na branch `main`
 
 ## Como executar
