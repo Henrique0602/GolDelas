@@ -38,7 +38,7 @@ const Perfil = () => {
           <p className="text-gray-400 text-sm">lucas_almeida_07@gmail.com</p>
           <p className="text-gray-400 text-sm">Porto Alegre-RS</p>
           <p className="text-yellow-400 text-lg mt-4">
-            Muito daora o futebol feminino.
+            Muito daora o futebol feminino!
           </p>
           {id && (
             <p className="text-gray-500 text-xs mt-2">
