@@ -1,104 +1,233 @@
-type ClubInfo = {
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchFixtures, FixtureResponse } from "@/services/apiFootball";
+
+type TeamInfo = {
+  id: number;
   name: string;
-  abbreviation: string;
   logo: string;
+  score: number | null;
 };
 
 type UpcomingMatch = {
   id: number;
-  date: string;
-  time: string;
-  competition: string[];
-  home: ClubInfo;
-  away: ClubInfo;
+  competition: string;
+  dateLabel: string;
+  home: TeamInfo;
+  away: TeamInfo;
 };
 
-const upcomingMatches: UpcomingMatch[] = [
-  {
-    id: 1,
-    date: "23/10/2025",
-    time: "21:30",
-    competition: ["Copa do Brasil"],
-    home: { name: "São Paulo", abbreviation: "SAO", logo: "/SP.png" },
-    away: { name: "Palmeiras", abbreviation: "PAL", logo: "/Palmeiras.png" }
-  },
-  {
-    id: 2,
-    date: "01/08/2025",
-    time: "16:00",
-    competition: ["Campeonato", "Brasileiro"],
-    home: { name: "Corinthians", abbreviation: "COR", logo: "/Corinthians.png" },
-    away: { name: "Vitória", abbreviation: "VIT", logo: "/Vitoria.png" }
-  },
-  {
-    id: 3,
-    date: "19/01/2025",
-    time: "18:00",
-    competition: ["Campeonato", "Carioca"],
-    home: { name: "Flamengo", abbreviation: "FLA", logo: "/Flamengo.png" },
-    away: { name: "Botafogo", abbreviation: "BOT", logo: "/Bota.png" }
-  },
-  {
-    id: 4,
-    date: "31/02/2025",
-    time: "19:45",
-    competition: ["Campeonato", "Brasileiro"],
-    home: { name: "Bahia", abbreviation: "BAH", logo: "/Bahia.png" },
-    away: { name: "Fortaleza", abbreviation: "FOR", logo: "/Fortaleza.png" }
+const MIN_FREE_SEASON = Number(import.meta.env.VITE_API_FOOTBALL_FREE_MIN_SEASON ?? "2021");
+const MAX_FREE_SEASON = Number(import.meta.env.VITE_API_FOOTBALL_FREE_MAX_SEASON ?? "2023");
+const DEFAULT_LEAGUE_ID = import.meta.env.VITE_API_FOOTBALL_LEAGUE_ID ?? "";
+const DEFAULT_SEASON = import.meta.env.VITE_API_FOOTBALL_SEASON ?? "";
+const DEFAULT_TIMEZONE = import.meta.env.VITE_API_FOOTBALL_TIMEZONE ?? "America/Sao_Paulo";
+const UPCOMING_LIMIT = 2;
+const FALLBACK_LEAGUE_ID = import.meta.env.VITE_API_FOOTBALL_FALLBACK_LEAGUE_ID ?? "39";
+const FALLBACK_SEASON = import.meta.env.VITE_API_FOOTBALL_FALLBACK_SEASON ?? "2023";
+const DEFAULT_FROM = import.meta.env.VITE_API_FOOTBALL_DEFAULT_FROM ?? "";
+const DEFAULT_TO = import.meta.env.VITE_API_FOOTBALL_DEFAULT_TO ?? "";
+const FALLBACK_FROM = import.meta.env.VITE_API_FOOTBALL_FALLBACK_FROM ?? "2023-05-06";
+const FALLBACK_TO = import.meta.env.VITE_API_FOOTBALL_FALLBACK_TO ?? "2023-05-08";
+
+const normalizeSeason = (seasonValue: string) => {
+  if (!seasonValue) return "";
+  const parsed = Number(seasonValue);
+  if (!Number.isFinite(parsed)) return FALLBACK_SEASON;
+  if (parsed < MIN_FREE_SEASON) return String(MIN_FREE_SEASON);
+  if (parsed > MAX_FREE_SEASON) return FALLBACK_SEASON;
+  return String(parsed);
+};
+
+const formatDateLabel = (isoDate: string) => {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return "Data indefinida";
   }
-];
+
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const mapFixtureToUpcomingMatch = (fixture: FixtureResponse): UpcomingMatch => ({
+  id: fixture.fixture.id,
+  competition: [fixture.league.country, fixture.league.name, fixture.league.round]
+    .filter(Boolean)
+    .join(" | "),
+  dateLabel: formatDateLabel(fixture.fixture.date),
+  home: {
+    id: fixture.teams.home.id,
+    name: fixture.teams.home.name,
+    logo: fixture.teams.home.logo ?? "/Logo.png",
+    score: fixture.goals.home ?? fixture.score.fulltime.home ?? null,
+  },
+  away: {
+    id: fixture.teams.away.id,
+    name: fixture.teams.away.name,
+    logo: fixture.teams.away.logo ?? "/Logo.png",
+    score: fixture.goals.away ?? fixture.score.fulltime.away ?? null,
+  },
+});
 
 const ProximosJogos = () => {
+  const [matches, setMatches] = useState<UpcomingMatch[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadUpcomingMatches = async () => {
+      setLoading(true);
+      setError(null);
+
+      let lastErrorMessage: string | null = null;
+
+      try {
+        const normalizedSeason = normalizeSeason(DEFAULT_SEASON);
+        const requests: Array<Record<string, string | number>> = [];
+
+        const from = DEFAULT_FROM || FALLBACK_FROM;
+        const to = DEFAULT_TO || FALLBACK_TO;
+
+        if (DEFAULT_LEAGUE_ID) {
+          requests.push({
+            league: DEFAULT_LEAGUE_ID,
+            ...(normalizedSeason ? { season: normalizedSeason } : {}),
+            from,
+            to,
+            timezone: DEFAULT_TIMEZONE,
+          });
+        }
+
+        requests.push({
+          league: FALLBACK_LEAGUE_ID,
+          season: FALLBACK_SEASON,
+          from: FALLBACK_FROM,
+          to: FALLBACK_TO,
+          timezone: DEFAULT_TIMEZONE,
+        });
+
+        const aggregated: FixtureResponse[] = [];
+        const seenIds = new Set<number>();
+
+        for (const params of requests) {
+          try {
+            const fixtures = await fetchFixtures(params);
+            for (const fixture of fixtures) {
+              if (!seenIds.has(fixture.fixture.id)) {
+                aggregated.push(fixture);
+                seenIds.add(fixture.fixture.id);
+              }
+            }
+          } catch (err) {
+            if (err instanceof Error) {
+              lastErrorMessage = err.message;
+            } else {
+              lastErrorMessage = "Erro desconhecido ao buscar dados da API-Football.";
+            }
+          }
+        }
+
+        if (!isMounted) return;
+
+        const allowedStatuses = new Set(["NS", "TBD", "PST"]);
+        let mapped = aggregated
+          .filter((fixture) => allowedStatuses.has(fixture.fixture.status.short))
+          .slice(0, UPCOMING_LIMIT)
+          .map(mapFixtureToUpcomingMatch);
+
+        if (mapped.length === 0) {
+          const finishedStatuses = new Set(["FT", "AET", "PEN"]);
+          mapped = aggregated
+            .filter((fixture) => finishedStatuses.has(fixture.fixture.status.short))
+            .slice(0, UPCOMING_LIMIT)
+            .map(mapFixtureToUpcomingMatch);
+        }
+
+        setMatches(mapped);
+
+        if (mapped.length === 0 && lastErrorMessage) {
+          setError(lastErrorMessage);
+        }
+      } catch (err) {
+        if (!isMounted) return;
+
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erro desconhecido ao buscar proximos jogos.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadUpcomingMatches();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="p-4">
-      <h2 className="text-yellow-400 text-lg font-bold mb-6">PRÓXIMOS JOGOS</h2>
+      <h2 className="text-yellow-400 text-lg font-bold mb-6">PROXIMOS JOGOS</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-around gap-6 text-center items-stretch">
-        {upcomingMatches.map((match) => (
+      {loading && <p className="text-gray-400 text-sm">Carregando proximos jogos...</p>}
+
+      {error && (
+        <p className="text-red-400 text-sm">
+          Nao foi possivel carregar os proximos jogos. {error}
+        </p>
+      )}
+
+      {!loading && !error && matches.length === 0 && (
+        <p className="text-gray-400 text-sm">
+          Nenhum jogo futuro encontrado para os filtros configurados.
+        </p>
+      )}
+
+      <div className="flex flex-wrap justify-around gap-6 text-center items-stretch">
+        {matches.map((match) => (
           <div
             key={match.id}
-            className="bg-black rounded-lg p-6 shadow-lg border-b border-yellow-700 lg:w-auto"
+            className="rounded-lg p-6 bg-black shadow-lg flex flex-col items-center border border-yellow-700/40"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 items-center gap-4">
-              <div className="text-yellow-400 text-sm text-center sm:text-left">
-                <div className="font-semibold">{match.date}</div>
-                <div className="font-semibold">{match.time}</div>
-              </div>
+            <p className="text-yellow-400 text-sm mb-2 font-bold">{match.competition}</p>
+            <p className="text-gray-400 text-xs mb-4">{match.dateLabel}</p>
 
-              <div className="flex items-center justify-center space-x-4 col-span-2">
-                <div className="flex items-center space-x-2">
+            {[match.home, match.away].map((team, index) => (
+              <div
+                key={team.id}
+                className={`flex justify-between items-center w-full ${index === 1 ? "mt-4" : ""}`}
+              >
+                <div className="flex items-center space-x-4">
                   <img
-                    src={match.home.logo}
-                    alt={match.home.name}
-                    className="h-8 w-8 md:h-10 md:w-10 object-contain"
+                    src={team.logo}
+                    alt={team.name}
+                    className="h-12 w-12 object-contain"
+                    loading="lazy"
                   />
-                  <span className="text-white text-base md:text-lg font-bold">
-                    {match.home.abbreviation}
-                  </span>
+                  <p className="text-white font-medium text-lg text-left">{team.name}</p>
                 </div>
-
-                <span className="text-white text-lg md:text-xl font-bold mx-2">X</span>
-
-                <div className="flex items-center space-x-2">
-                  <span className="text-white text-base md:text-lg font-bold">
-                    {match.away.abbreviation}
-                  </span>
-                  <img
-                    src={match.away.logo}
-                    alt={match.away.name}
-                    className="h-8 w-8 md:h-10 md:w-10 object-contain"
-                  />
-                </div>
+                <p className="text-white font-bold text-2xl ml-10">{team.score ?? "-"}</p>
               </div>
+            ))}
 
-              <div className="flex justify-center sm:justify-end">
-                <div className="text-yellow-400 text-sm font-semibold text-center sm:text-right">
-                  {match.competition.map((line) => (
-                    <div key={line}>{line}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <Link to={`/Estatisticas/${match.id}`}>
+              <button
+                type="button"
+                className="text-yellow-400 text-sm mt-4 underline flex items-center"
+              >
+                Ver estatisticas
+              </button>
+            </Link>
           </div>
         ))}
       </div>
@@ -107,4 +236,3 @@ const ProximosJogos = () => {
 };
 
 export default ProximosJogos;
-

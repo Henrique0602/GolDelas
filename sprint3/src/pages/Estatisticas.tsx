@@ -1,177 +1,223 @@
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { useParams } from "react-router-dom";
+import {
+  fetchFixtureById,
+  fetchFixtureEvents,
+  fetchFixtureStatistics,
+  FixtureEventResponse,
+  FixtureResponse,
+} from "@/services/apiFootball";
 
-type MatchStats = Record<string, [string | number, string | number]>;
-
-type MatchData = {
-  time1: string;
-  time2: string;
-  placar: string;
-  detalhes: MatchStats;
-  imagens: {
-    time1: string;
-    time2: string;
-  };
-  gols: {
-    jogador: string;
-    minutos: string;
-    time: string;
-  }[];
+type StatisticRow = {
+  type: string;
+  home: string | number | null;
+  away: string | number | null;
 };
 
-const jogos: Record<string, MatchData> = {
-  "1": {
-    time1: "São Paulo",
-    time2: "Palmeiras",
-    placar: "5 x 0",
-    detalhes: {
-      chutes: [12, 7],
-      chutesAoGol: [10, 3],
-      posseDeBola: ["53%", "47%"],
-      passes: [430, 381],
-      precisaoDePasses: ["81%", "78%"],
-      faltas: [5, 6],
-      cartoesAmarelos: [1, 2],
-      cartoesVermelhos: [0, 0],
-      impedimentos: [2, 2],
-      escanteios: [7, 4]
-    },
-    imagens: {
-      time1: "/SP.png",
-      time2: "/Palmeiras.png"
-    },
-    gols: [
-      { jogador: "Athenea del Castillo", minutos: "52, 64", time: "São Paulo" },
-      { jogador: "Lena Oberdorf", minutos: "15 (P)", time: "Palmeiras" }
-    ]
-  },
-  "2": {
-    time1: "Corinthians",
-    time2: "Vitória",
-    placar: "2 x 1",
-    detalhes: {
-      chutes: [12, 7],
-      chutesAoGol: [5, 3],
-      posseDeBola: ["53%", "47%"],
-      passes: [500, 200],
-      precisaoDePasses: ["71%", "75%"],
-      faltas: [5, 10],
-      cartoesAmarelos: [1, 2],
-      cartoesVermelhos: [0, 1],
-      impedimentos: [2, 4],
-      escanteios: [7, 7]
-    },
-    imagens: {
-      time1: "/Corinthians.png",
-      time2: "/Vitoria.png"
-    },
-    gols: [
-      { jogador: "Joana", minutos: "52, 64", time: "Corinthians" },
-      { jogador: "Adriana", minutos: "15 (P)", time: "Vitória" }
-    ]
-  },
-  "3": {
-    time1: "Flamengo",
-    time2: "Botafogo",
-    placar: "3 x 2",
-    detalhes: {
-      chutes: [10, 8],
-      chutesAoGol: [5, 5],
-      posseDeBola: ["53%", "47%"],
-      passes: [300, 200],
-      precisaoDePasses: ["70%", "75%"],
-      faltas: [5, 2],
-      cartoesAmarelos: [1, 2],
-      cartoesVermelhos: [1, 0],
-      impedimentos: [2, 4],
-      escanteios: [7, 7]
-    },
-    imagens: {
-      time1: "/Flamengo.png",
-      time2: "/Bota.png"
-    },
-    gols: [
-      { jogador: "Debora", minutos: "52, 64, 90", time: "Flamengo" },
-      { jogador: "Adriana", minutos: "15 (P), 95", time: "Botafogo" }
-    ]
-  },
-  "4": {
-    time1: "Bahia",
-    time2: "Fortaleza",
-    placar: "2 x 2",
-    detalhes: {
-      chutes: [10, 8],
-      chutesAoGol: [5, 5],
-      posseDeBola: ["53%", "47%"],
-      passes: [300, 200],
-      precisaoDePasses: ["70%", "75%"],
-      faltas: [5, 2],
-      cartoesAmarelos: [1, 2],
-      cartoesVermelhos: [1, 0],
-      impedimentos: [2, 4],
-      escanteios: [7, 7]
-    },
-    imagens: {
-      time1: "/Bahia.png",
-      time2: "/Fortaleza.png"
-    },
-    gols: [
-      { jogador: "Lucy", minutos: "52, 64", time: "Bahia" },
-      { jogador: "Julia", minutos: "5, 95", time: "Fortaleza" }
-    ]
+const formatStatValue = (value: string | number | null) => {
+  if (value === null || value === undefined || value === "") {
+    return "—";
   }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  return value;
 };
 
 const Estatisticas = () => {
   const { id } = useParams<{ id: string }>();
-  const jogo = id ? jogos[id] : undefined;
+  const [fixture, setFixture] = useState<FixtureResponse | null>(null);
+  const [statistics, setStatistics] = useState<StatisticRow[]>([]);
+  const [goalEvents, setGoalEvents] = useState<FixtureEventResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!jogo) {
-    return (
-      <div className="bg-black text-white min-h-screen">
-        <Header />
-        <main className="p-6">
-          <p className="text-center text-gray-400">Estatísticas não encontradas.</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!id) {
+      setError("Jogo nao encontrado.");
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadFixtureData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [fixtureData, statsData, eventsData] = await Promise.all([
+          fetchFixtureById(id),
+          fetchFixtureStatistics(id),
+          fetchFixtureEvents(id),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!fixtureData) {
+          setError("Nao encontramos informacoes desse jogo.");
+          setLoading(false);
+          return;
+        }
+
+        setFixture(fixtureData);
+
+        const statsOrder: string[] = [];
+        const statsMap = new Map<string, { home: string | number | null; away: string | number | null }>();
+
+        for (const entry of statsData) {
+          const side = entry.team.id === fixtureData.teams.home.id ? "home" : "away";
+
+          for (const stat of entry.statistics) {
+            if (!stat.type) continue;
+
+            if (!statsMap.has(stat.type)) {
+              statsMap.set(stat.type, { home: null, away: null });
+              statsOrder.push(stat.type);
+            }
+
+            const current = statsMap.get(stat.type);
+            if (current) {
+              current[side] = stat.value;
+            }
+          }
+        }
+
+        const statsRows = statsOrder.map((key) => {
+          const values = statsMap.get(key);
+          return {
+            type: key,
+            home: values ? formatStatValue(values.home) : "—",
+            away: values ? formatStatValue(values.away) : "—",
+          };
+        });
+
+        setStatistics(statsRows);
+
+        const goals = eventsData.filter((event) => event.type === "Goal");
+        setGoalEvents(goals);
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erro ao buscar dados da partida.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadFixtureData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const homeScore = useMemo(() => {
+    if (!fixture) return "—";
+    return fixture.goals.home ?? fixture.score.fulltime.home ?? "—";
+  }, [fixture]);
+
+  const awayScore = useMemo(() => {
+    if (!fixture) return "—";
+    return fixture.goals.away ?? fixture.score.fulltime.away ?? "—";
+  }, [fixture]);
 
   return (
     <div className="bg-black text-white min-h-screen">
       <Header />
       <main className="p-6">
-        <div className="text-center mt-10">
-          <div className="flex justify-center items-center space-x-4">
-            <img src={jogo.imagens.time1} alt={jogo.time1} className="h-12 w-12" />
-            <p className="text-4xl font-bold">{jogo.placar}</p>
-            <img src={jogo.imagens.time2} alt={jogo.time2} className="h-12 w-12" />
-          </div>
-          <p className="text-gray-400 mt-2">
-            {jogo.gols.map((gol) => `${gol.jogador} ${gol.minutos}`).join(" | ")}
+        {loading && (
+          <p className="text-center text-gray-400 mt-10">
+            Carregando estatisticas da partida...
           </p>
-        </div>
+        )}
 
-        <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center mt-10">
-          Estatísticas dos Times
-        </h2>
+        {error && !loading && (
+          <p className="text-center text-red-400 mt-10">{error}</p>
+        )}
 
-        <div>
-          {Object.entries(jogo.detalhes).map(([key, value]) => (
-            <div
-              key={key}
-              className="flex justify-between items-center border-b border-gray-700 py-2"
-            >
-              <p className="text-yellow-400 font-bold text-lg">{value[0]}</p>
-              <p className="text-white text-sm capitalize">
-                {key.replace(/([A-Z])/g, " $1")}
+        {!loading && !error && fixture && (
+          <>
+            <div className="text-center mt-10">
+              <div className="text-gray-400 text-sm mb-4">
+                <p>{fixture.league.name}</p>
+                {fixture.league.round && <p>{fixture.league.round}</p>}
+                <p>{new Date(fixture.fixture.date).toLocaleString("pt-BR")}</p>
+              </div>
+
+              <div className="flex justify-center items-center space-x-4">
+                <img
+                  src={fixture.teams.home.logo ?? "/Logo.png"}
+                  alt={fixture.teams.home.name}
+                  className="h-12 w-12 object-contain"
+                  loading="lazy"
+                />
+                <p className="text-4xl font-bold">
+                  {homeScore} x {awayScore}
+                </p>
+                <img
+                  src={fixture.teams.away.logo ?? "/Logo.png"}
+                  alt={fixture.teams.away.name}
+                  className="h-12 w-12 object-contain"
+                  loading="lazy"
+                />
+              </div>
+
+              <p className="text-gray-400 mt-2">
+                {goalEvents.length > 0
+                  ? goalEvents
+                      .map((event) => {
+                        const minute = event.time.elapsed ?? "--";
+                        const extra = event.time.extra ? `+${event.time.extra}` : "";
+                        const player = event.player.name ?? "Jogadora";
+                        const team = event.team.name;
+                        return `${player} ${minute}${extra}' (${team})`;
+                      })
+                      .join(" | ")
+                  : "Nenhum detalhamento de gols encontrado."}
               </p>
-              <p className="text-red-400 font-bold text-lg">{value[1]}</p>
             </div>
-          ))}
-        </div>
+
+            <h2 className="text-yellow-400 text-lg font-bold mb-4 text-center mt-10">
+              Estatisticas dos Times
+            </h2>
+
+            <div className="max-w-3xl mx-auto border border-yellow-700/40 rounded-lg divide-y divide-gray-800">
+              {statistics.length === 0 && (
+                <p className="text-gray-400 text-sm text-center py-4">
+                  Estatisticas detalhadas indisponiveis para esta partida.
+                </p>
+              )}
+
+              {statistics.map((stat) => (
+                <div
+                  key={stat.type}
+                  className="flex justify-between items-center px-4 py-3"
+                >
+                  <p className="text-yellow-400 font-bold text-lg">{stat.home}</p>
+                  <p className="text-white text-sm text-center uppercase tracking-wide">
+                    {stat.type}
+                  </p>
+                  <p className="text-red-400 font-bold text-lg">{stat.away}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />
@@ -180,4 +226,3 @@ const Estatisticas = () => {
 };
 
 export default Estatisticas;
-
